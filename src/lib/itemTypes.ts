@@ -27,13 +27,14 @@ export type ShipMainTypes =
 	| 'Quartermaster';
 
 export type ItemIdentifiers = {
-	id: number;
+	id: string;
 	name: string;
 	legend: string;
 	mainType: string;
 	subType: string;
 	rarity: Rarities;
 	imageId: string;
+	deleted: boolean;
 };
 
 export type GearBaseStats = Partial<{
@@ -93,8 +94,11 @@ export type ArmorItemData = ItemIdentifiers & {
 	gemNo: number;
 	mainType: ArmorMainTypes;
 	statsPerLevel: ArmorLevelStats[];
+	validModifiers: string[];
 };
 export type GemItemData = ItemIdentifiers & { mainType: GemMainTypes } & GemStats;
 export type ShipItemData = ItemIdentifiers & ShipStats & { mainType: ShipMainTypes };
 export type EnchantItemData = ItemIdentifiers & EnchantStats & { mainType: EnchantMainTypes };
 export type ModifierItemData = ItemIdentifiers & ModifierStats & { mainType: ModifierMainTypes };
+
+export interface anyItem extends ItemIdentifiers, ItemStats, Omit<ArmorItemData, 'mainType'>, Record<string, any> {};
