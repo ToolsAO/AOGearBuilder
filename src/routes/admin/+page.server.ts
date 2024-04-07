@@ -49,6 +49,18 @@ function checkAttributes(item:anyItem) {
 	return true;
 }
 
+export async function load({ fetch, setHeaders }) {
+
+    const data = await itemsDB.find({}, {projection: {
+		_id: 0
+	}}).toArray();
+
+
+	return {
+		items: data
+	}
+}
+
 /*
 
 example data:
@@ -98,5 +110,22 @@ export const actions = {
 		item.id = newId;
 
         await AOTools.collection("items").insertOne(item);
+	},
+	edit: async ({ request }) => {
+		const formData = await request.formData();
+		let validPass = await verifyPassword((formData.get("password") as string));
+		if (validPass != true) {
+			return validPass;
+		}
+
+		let item:anyItem = JSON.parse((formData.get("itemData") as string));
+
+		// do validating checks
+		let validAttributes = checkAttributes(item);
+		if (validAttributes != true) {
+			return fail(403, { "error": `Missing ${validAttributes}` });
+		}
+
+		await AOTools.collection("items").updateOne({"id":item.id}, { $set: item})
 	}
 };

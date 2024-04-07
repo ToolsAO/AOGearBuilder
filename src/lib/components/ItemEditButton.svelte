@@ -11,14 +11,7 @@
 	import RangeInput from './inputs/RangeInput.svelte';
 	import toast from 'svelte-french-toast';
 
-	export let itemDefault:anyItem, password:string;
-
-	let item:anyItem = Object.assign({}, itemDefault);
-
-	function resetItem() {
-		item = Object.assign({}, itemDefault);
-		item.imageId = imageIdDefault;
-	}
+	export let item:anyItem, password:string;
 
     let open = false;
 
@@ -262,8 +255,13 @@
 		}
 	};
 
+    let statsTable: Table;
 
-	let statsTable = new Table(90, 130, true);
+    if (item.statsPerLevel) {
+        statsTable = new Table(item.statsPerLevel[0]["level"], item.statsPerLevel[item.statsPerLevel.length - 1]["level"], true);
+    } else {
+        statsTable = new Table(90, 130, false);
+    }
 	let validCategories: string[] = mainTypeStats.gearStatic;
 
 
@@ -338,34 +336,36 @@
 
 </script>
 
-<button class="font-bold text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center" on:click={() => handleToggle()}>Create Item</button>
-
+<button on:click={() => handleToggle()}
+    ><img
+        src={item["imageId"]}
+        alt="{item["name"]} Button"
+    /></button
+>
 
 {#if open}
-<form method="POST" action="?/create" on:submit={generateEntry} use:enhance={() => {
-    return async ({ result, update }) => {
-        update({ reset: false });
-
-        if (result.type === 'success') {
-            handleToggle();
-			toast.success('Successfully created '+item.name+'!');
-			resetItem();
-        }
-
-		if (result.type === 'failure') {
-			if (result["data"] !== undefined && result["data"]["error"] !== undefined) {
-				toast.error("Error: "+result["data"]["error"]);
-			} else {
-				toast.error("Error: Unknown");
-			}
-        }
-
-    };
-}}>
-
-    <div class="modal z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center p-8 lg:p-0 overflow-x-hidden overflow-y-auto">
-        <div class="modal-overlay fixed w-full h-full bg-gray-900 opacity-50" />
-        <div class="bg-white flex flex-col w-full lg:h-max lg:w-5/6 mx-auto rounded-lg shadow-xl z-50 overflow-y-auto max-h-full">
+<div class="modal z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center p-8 lg:p-0 overflow-x-hidden overflow-y-auto">
+    <div class="modal-overlay fixed w-full h-full bg-gray-900 opacity-50" />
+    <div class="bg-white flex flex-col w-full lg:h-max lg:w-5/6 mx-auto rounded-lg shadow-xl z-50 overflow-y-auto max-h-full">
+        <form method="POST" action="?/edit" on:submit={generateEntry} use:enhance={() => {
+            return async ({ result, update }) => {
+                update({ reset: false });
+        
+                if (result.type === 'success') {
+                    handleToggle();
+                    toast.success('Successfully updated '+item.name+'!');
+                }
+        
+                if (result.type === 'failure') {
+                    if (result["data"] !== undefined && result["data"]["error"] !== undefined) {
+                        toast.error("Error: "+result["data"]["error"]);
+                    } else {
+                        toast.error("Error: Unknown");
+                    }
+                }
+        
+            };
+        }}>
 
             <div class="flex flex-shrink-0 justify-between items-center head bg-gray-100 py-5 px-8 text-2xl font-extrabold overflow-hidden">
                 {title}
@@ -380,134 +380,134 @@
             <div class="content p-8 pt-2 overflow-y-auto">
                 <!-- uncomment when auth system setup -->
                 <input type="hidden" id="password" name="password" value={password} required>
-				<input type="hidden" id="itemData" name="itemData" value={finalSubmitData} required>
+                <input type="hidden" id="itemData" name="itemData" value={finalSubmitData} required>
 
                 <h6 class="mb-1 text-lg font-bold text-gray-900">Info</h6>
                 <div class="grid gap-6 mb-6 md:grid-cols-4">
                     <TextInput id={"name"} name={"Name"} placeholder={"None"} isRequired={true} bind:value={item.name} />
-					<SelectInput id={"rarity"} name={"Rarity"} dropdowns={rarities} isRequired={true} bind:value={item.rarity} tooltip={"Please select a rarity"} />
+                    <SelectInput id={"rarity"} name={"Rarity"} dropdowns={rarities} isRequired={true} bind:value={item.rarity} tooltip={"Please select a rarity"} />
                     <SelectInput id={"mainType"} name={"Category"} dropdowns={Object.keys(tableSettings.mainType)} bind:value={item.mainType} onChange={updateMainType} isRequired={true} tooltip={"Please select a category"} />
                     <!-- fix the types by just changing them reactively at the top-->
-					{#if tableSettings.mainType[item.mainType].subTypes != null}
-                    	<SelectInput id={"subType"} name={"Sub Category"} bind:value={item.subType} bind:dropdowns={tableSettings.mainType[item.mainType].subTypes} isRequired={true} tooltip={"Please select a sub category"} />
-					{/if}
-				</div>
+                    {#if tableSettings.mainType[item.mainType].subTypes != null}
+                        <SelectInput id={"subType"} name={"Sub Category"} bind:value={item.subType} bind:dropdowns={tableSettings.mainType[item.mainType].subTypes} isRequired={true} tooltip={"Please select a sub category"} />
+                    {/if}
+                </div>
                 <div class="grid gap-6 mb-6 md:grid-cols-4">
-					{#if tableSettings.mainType[item.mainType].gemVisibility == true}
-						<RangeInput id={"gemNo"} name={"Gem No"} min={0} max={3} bind:value={item.gemNo} isRequired={true} />
-					{/if}
-					{#if tableSettings.mainType[item.mainType].levelVisibility == true}
-						<RangeInput id={"minLevel"} name={"Min Level"} value={statsTable.minLevel} min={10} max={statsTable.maxLevel-10} step={10} onChange={setMin} isRequired={true} />
-						<RangeInput id={"maxLevel"} name={"Max Level"} value={statsTable.maxLevel} min={statsTable.minLevel+10} max={130} step={10} onChange={setMax} isRequired={true} />
-					{/if}
+                    {#if tableSettings.mainType[item.mainType].gemVisibility == true}
+                        <RangeInput id={"gemNo"} name={"Gem No"} min={0} max={3} bind:value={item.gemNo} isRequired={true} />
+                    {/if}
+                    {#if tableSettings.mainType[item.mainType].levelVisibility == true}
+                        <RangeInput id={"minLevel"} name={"Min Level"} value={statsTable.minLevel} min={10} max={statsTable.maxLevel-10} step={10} onChange={setMin} isRequired={true} />
+                        <RangeInput id={"maxLevel"} name={"Max Level"} value={statsTable.maxLevel} min={statsTable.minLevel+10} max={130} step={10} onChange={setMax} isRequired={true} />
+                    {/if}
                 </div>
                 <div class="grid gap-6 mb-6 md:grid-cols-6">
-					<div class="col-span-3">
-						<TextInput id={"legend"} name={"Legend"} isRequired={true} placeholder={"None"} bind:value={item.legend} />
-					</div>
+                    <div class="col-span-3">
+                        <TextInput id={"legend"} name={"Legend"} isRequired={true} placeholder={"None"} bind:value={item.legend} />
+                    </div>
                     <div class="col-span-2">
-						<TextInput id={"imageId"} name={"Image ID"} isRequired={true} bind:value={item.imageId} />
-					</div>
-					<div class="col-span-1 mx-auto my-auto">
+                        <TextInput id={"imageId"} name={"Image ID"} isRequired={true} bind:value={item.imageId} />
+                    </div>
+                    <div class="col-span-1 mx-auto my-auto">
                         <img src={item.imageId} alt={item.imageId} on:error={imageError} />
                     </div>
                 </div>
 
                 <h6 class="mb-1 text-lg font-bold text-gray-900">Stats</h6>
 
-				<!-- 
-						
-					VisiBools
-					
-				-->
+                <!-- 
+                        
+                    VisiBools
+                    
+                -->
 
-				<h6 class="mb-1 text-md font-bold text-gray-900">Stat Options</h6>
-				<div class="flex flex-wrap items-center">
-					{#each validCategories as key}
-						<div class="px-2">
-							<input
-								id="{key}"
-								type="checkbox"
-								bind:checked={statsTable.visiBools[key].bool}
-								on:input={() => {
-									statsTable.updateColumns();
-								}}
-							/>
-							<label for="{key}">{statsTable.visiBools[key].text}</label>
-						</div>
-					{/each}
-				</div>
+                <h6 class="mb-1 text-md font-bold text-gray-900">Stat Options</h6>
+                <div class="flex flex-wrap items-center">
+                    {#each validCategories as key}
+                        <div class="px-2">
+                            <input
+                                id="{key}"
+                                type="checkbox"
+                                bind:checked={statsTable.visiBools[key].bool}
+                                on:input={() => {
+                                    statsTable.updateColumns();
+                                }}
+                            />
+                            <label for="{key}">{statsTable.visiBools[key].text}</label>
+                        </div>
+                    {/each}
+                </div>
 
-				<!-- 
-		
-					Modifier Checkboxes 
-				
-				-->
+                <!-- 
+        
+                    Modifier Checkboxes 
+                
+                -->
 
-				{#if tableSettings.mainType[item.mainType].modifiable == true}
-					<h6 class="mb-1 text-md font-bold text-gray-900">Modifier Options</h6>
-					<div class="flex flex-wrap items-center">
-						{#each Object.keys(statsTable.validModifiers) as key}
-							<div class="px-2">
-								<input
-									id="{key}"
-									type="checkbox"
-									bind:checked={statsTable.validModifiers[key]}
-									on:input={() => {
-										statsTable.updateColumns();
-									}}
-								/>
-								<label for="{key}">{key}</label>
-							</div>
-						{/each}
-					</div>
-				{/if}
+                {#if tableSettings.mainType[item.mainType].modifiable == true}
+                    <h6 class="mb-1 text-md font-bold text-gray-900">Modifier Options</h6>
+                    <div class="flex flex-wrap items-center">
+                        {#each Object.keys(statsTable.validModifiers) as key}
+                            <div class="px-2">
+                                <input
+                                    id="{key}"
+                                    type="checkbox"
+                                    bind:checked={statsTable.validModifiers[key]}
+                                    on:input={() => {
+                                        statsTable.updateColumns();
+                                    }}
+                                />
+                                <label for="{key}">{key}</label>
+                            </div>
+                        {/each}
+                    </div>
+                {/if}
 
-				<!--
+                <!--
 
-					Table
+                    Table
 
-				-->
-				
-				<div class="grid grid-cols-6 md:grid-cols-12">
-					<div class="col-span-1">
-						{#if statsTable.levelVisibility}
-							<div class="w-full mb-1 font-bold">Level</div>
-						{:else}
-							<div class="w-full mb-1 font-bold">Stats</div>
-						{/if}
+                -->
+                
+                <div class="grid grid-cols-6 md:grid-cols-12">
+                    <div class="col-span-1">
+                        {#if statsTable.levelVisibility}
+                            <div class="w-full mb-1 font-bold">Level</div>
+                        {:else}
+                            <div class="w-full mb-1 font-bold">Stats</div>
+                        {/if}
 
-						{#each Object.keys(statsTable.visiBools) as stat}
-							{#if statsTable.visiBools[stat].bool === true}
-								<div class="w-full pb-1 h-6 items-center">
-									<img class="object-contain h-6" alt={statsTable.visiBools[stat].text} src={statsTable.visiBools[stat].imageId} />
-								</div>
-							{/if}
-						{/each}
-					</div>
-					{#each statsTable.columns as column}
-						<div class="col-span-1">
-							{#each Object.keys(column) as key}
-								{#if key != 'parentTable'}
-									{#if key === 'level'}
-										{#if statsTable.levelVisibility}
-											<div class="w-full mb-1 font-bold">{column.level}</div>
-										{:else}
-											<div class="w-full mb-1 font-bold">-</div>
-										{/if}
-									{:else if key !== 'level ' && statsTable.visiBools[key].bool === true}
-										<input type="number" class="w-full h-6 max-w-full bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block p-1" bind:value={column[key]} placeholder={"0"} required />
-									{/if}
-								{/if}
-							{/each}
-						</div>
-					{/each}
-				</div>
+                        {#each Object.keys(statsTable.visiBools) as stat}
+                            {#if statsTable.visiBools[stat].bool === true}
+                                <div class="w-full pb-1 h-6 items-center">
+                                    <img class="object-contain h-6" alt={statsTable.visiBools[stat].text} src={statsTable.visiBools[stat].imageId} />
+                                </div>
+                            {/if}
+                        {/each}
+                    </div>
+                    {#each statsTable.columns as column}
+                        <div class="col-span-1">
+                            {#each Object.keys(column) as key}
+                                {#if key != 'parentTable'}
+                                    {#if key === 'level'}
+                                        {#if statsTable.levelVisibility}
+                                            <div class="w-full mb-1 font-bold">{column.level}</div>
+                                        {:else}
+                                            <div class="w-full mb-1 font-bold">-</div>
+                                        {/if}
+                                    {:else if key !== 'level ' && statsTable.visiBools[key].bool === true}
+                                        <input type="number" class="w-full h-6 max-w-full bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block p-1" bind:value={column[key]} placeholder={"0"} required />
+                                    {/if}
+                                {/if}
+                            {/each}
+                        </div>
+                    {/each}
+                </div>
 
             </div>
 
-            <SubmitButton text="Create" />
-        </div>
+            <SubmitButton text="Update" />
+        </form>
     </div>
-</form>
+</div>
 {/if}
