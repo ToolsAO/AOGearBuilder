@@ -340,6 +340,10 @@ export class Table {
 	getData() {
 		let data = this.columns.map((column) => column.getData());
 
+		data = data.filter(function(column){
+			return !(Object.keys(column).length <= 1 && "level" in column);
+		});
+
 		if (this.levelVisibility) {
 			return data;
 		} else {

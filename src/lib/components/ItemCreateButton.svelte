@@ -17,7 +17,6 @@
 
 	function resetItem() {
 		item = Object.assign({}, itemDefault);
-		item.imageId = imageIdDefault;
 	}
 
     let open = false;
@@ -26,14 +25,10 @@
 	let finalSubmitData:string = "";
 
 	if (item.imageId == "") {
-		item.imageId = imageIdDefault;
+		item.imageId = "NO_IMAGE";
 	}
 
-	function imageError(e: Event & {currentTarget: EventTarget & Element;}) {
-		if (e.target) {
-			(e.target as HTMLInputElement).src=imageIdDefault;
-		}
-	}
+	let validImage = true;
 
 	function setMin(e: Event & {currentTarget: EventTarget & Element;}) {
 		if (e.target) {
@@ -301,9 +296,15 @@
 			deleted: item.deleted
 		};
 
+		if (!validImage) {
+			tempItem.imageId = "NO_IMAGE";
+		}
+
 		if (['Accessory', 'Chestplate', 'Pants'].includes(item.mainType)) {
 			tempItem.subType = item.subType;
 			tempItem.gemNo = item.gemNo;
+			tempItem.minLevel = statsTable.minLevel;
+			tempItem.maxLevel = statsTable.maxLevel;
 			tempItem.statsPerLevel = statsTable.getData();
 			tempItem.validModifiers = [];
 			for (const modifier in statsTable.validModifiers) {
@@ -314,6 +315,8 @@
 		} else if (['Ship'].includes(item.mainType)) {
 			tempItem.subType = item.subType;
 			tempItem.gemNo = item.gemNo;
+			tempItem.minLevel = statsTable.minLevel;
+			tempItem.maxLevel = statsTable.maxLevel;
 			tempItem.statsPerLevel = statsTable.getData();
 			tempItem.validModifiers = [];
 			for (const modifier in statsTable.validModifiers) {
@@ -397,8 +400,8 @@
 						<RangeInput id={"gemNo"} name={"Gem No"} min={0} max={3} bind:value={item.gemNo} isRequired={true} />
 					{/if}
 					{#if tableSettings.mainType[item.mainType].levelVisibility == true}
-						<RangeInput id={"minLevel"} name={"Min Level"} value={statsTable.minLevel} min={10} max={statsTable.maxLevel-10} step={10} onChange={setMin} isRequired={true} />
-						<RangeInput id={"maxLevel"} name={"Max Level"} value={statsTable.maxLevel} min={statsTable.minLevel+10} max={130} step={10} onChange={setMax} isRequired={true} />
+						<RangeInput id={"minLevel"} name={"Min Level"} value={statsTable.minLevel} min={10} max={statsTable.maxLevel} step={10} onChange={setMin} isRequired={true} />
+						<RangeInput id={"maxLevel"} name={"Max Level"} value={statsTable.maxLevel} min={statsTable.minLevel} max={130} step={10} onChange={setMax} isRequired={true} />
 					{/if}
                 </div>
                 <div class="grid gap-6 mb-6 md:grid-cols-6">
@@ -409,7 +412,8 @@
 						<TextInput id={"imageId"} name={"Image ID"} isRequired={true} bind:value={item.imageId} />
 					</div>
 					<div class="col-span-1 mx-auto my-auto">
-                        <img src={item.imageId} alt={item.imageId} on:error={imageError} />
+                        <img style="display: {validImage?"block":"none"};" src={item.imageId} alt={item.name} on:error={()=>validImage=false} on:load={()=>validImage=true}/>
+						<p style="display:{validImage?"none":"block"};">{item.name || "None"}</p>
                     </div>
                 </div>
 
@@ -496,7 +500,7 @@
 											<div class="w-full mb-1 font-bold">-</div>
 										{/if}
 									{:else if key !== 'level ' && statsTable.visiBools[key].bool === true}
-										<input type="number" class="w-full h-6 max-w-full bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block p-1" bind:value={column[key]} placeholder={"0"} required />
+										<input type="number" class="w-full h-6 max-w-full bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block p-1" bind:value={column[key]} placeholder={"0"} />
 									{/if}
 								{/if}
 							{/each}

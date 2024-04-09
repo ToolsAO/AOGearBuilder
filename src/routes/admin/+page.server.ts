@@ -126,6 +126,6 @@ export const actions = {
 			return fail(403, { "error": `Missing ${validAttributes}` });
 		}
 
-		await AOTools.collection("items").updateOne({"id":item.id}, { $set: item})
+		await AOTools.collection("items").updateOne({"id":item.id}, { $set: item});
 	}
 };
