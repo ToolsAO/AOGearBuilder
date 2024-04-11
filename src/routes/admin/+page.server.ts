@@ -13,28 +13,17 @@ async function verifyPassword(password:string) {
 	return true;
 }
 
-const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-function numberToUid(number:number) {
-    let result = '';
+const maxIdGen = 100;
+const idLength:number = 3;
 
-    while (number > 0) {
-        let remainder = (number - 1) % characters.length;
-        result = characters[remainder] + result;
-        number = Math.floor((number - 1) / characters.length);
+const characters:string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    }
-
-    return result;
-}
-
-function uidToNumber(uid:string) {
-    let number = 0;
-
-    for (let i = 0; i < uid.length; i++) {
-        number = (number * characters.length) + characters.indexOf(uid[i]) + 1;
-    }
-
-    return number;
+function getRandomId() {
+	let id:string = "";
+	for (let i = 0; i < idLength; i++) {
+		id += characters.charAt(Math.floor(Math.random() * characters.length))
+	}
+	return id;
 }
 
 function checkAttributes(item:anyItem) {
@@ -97,15 +86,15 @@ export const actions = {
 			return fail(403, { "error": `Missing ${validAttributes}` });
 		}
 
-		let lastItem:anyItem|null = await itemsDB.findOne({}, {projection: {_id: 0, id:1}, sort:{id:-1}});
-		let newId = "a";
+		let newId = getRandomId();
+		let generatedIds = 0;
 
-		if (lastItem) {
-			newId = numberToUid(uidToNumber(lastItem.id)+1);
-		}
-
-		if (await itemsDB.findOne({"id":newId}, {projection: {_id: 0, id:1}})) {
-			return fail(403, { "error":"Something has gone wrong ID already exists" });
+		while (await itemsDB.findOne({"id":newId}, {projection: {_id: 0, id:1}})) {
+			newId = getRandomId();
+			generatedIds += 1;
+			if (generatedIds > maxIdGen) {
+				return fail(403, { "error":"Something has gone wrong. Reached max IDs generated. The database maybe full please contact a developer." });
+			}
 		}
 		item.id = newId;
 

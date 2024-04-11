@@ -24,11 +24,8 @@
 	let imageIdDefault:string = "https://raw.githubusercontent.com/BobbyNooby/AOGearBuilder/master/static/assets/images/unknown.jpg";
 	let finalSubmitData:string = "";
 
-	if (item.imageId == "") {
-		item.imageId = "NO_IMAGE";
-	}
 
-	let validImage = true;
+	let validImage = false;
 
 	function setMin(e: Event & {currentTarget: EventTarget & Element;}) {
 		if (e.target) {
@@ -409,7 +406,7 @@
 						<TextInput id={"legend"} name={"Legend"} isRequired={true} placeholder={"None"} bind:value={item.legend} />
 					</div>
                     <div class="col-span-2">
-						<TextInput id={"imageId"} name={"Image ID"} isRequired={true} bind:value={item.imageId} />
+						<TextInput id={"imageId"} name={"Image ID"} bind:value={item.imageId} placeholder={"NO_IMAGE"} />
 					</div>
 					<div class="col-span-1 mx-auto my-auto">
                         <img style="display: {validImage?"block":"none"};" src={item.imageId} alt={item.name} on:error={()=>validImage=false} on:load={()=>validImage=true}/>
@@ -500,7 +497,7 @@
 											<div class="w-full mb-1 font-bold">-</div>
 										{/if}
 									{:else if key !== 'level ' && statsTable.visiBools[key].bool === true}
-										<input type="number" class="w-full h-6 max-w-full bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block p-1" bind:value={column[key]} placeholder={"0"} />
+										<input type="number" step="any" class="w-full h-6 max-w-full bg-gray-50 border border-gray-300 text-gray-900 focus:ring-blue-500 focus:border-blue-500 block p-1" bind:value={column[key]} placeholder={"0"} />
 									{/if}
 								{/if}
 							{/each}
