@@ -55,7 +55,9 @@
 	<div class="flex flex-wrap justify-center">
 		{#each listItems as item}
 			<div class="flex flex-col p-1">
-				<ItemEditButton {item} bind:password={password} />
+				{#key item.id}
+					<ItemEditButton {item} bind:password={password} />
+				{/key}
 			</div>
 		{/each}
 	</div>
