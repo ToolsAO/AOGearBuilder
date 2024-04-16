@@ -15,6 +15,8 @@ export type ModifierMainTypes = 'Modifier';
 
 export type EnchantMainTypes = 'Enchant';
 
+export type StatTypes =  "None" | "Magic" | "Strength" | "Vitality";
+
 export type ShipMainTypes =
 	| 'Cannons'
 	| 'Hull Armor'
@@ -32,6 +34,7 @@ export type ItemIdentifiers = {
 	legend: string;
 	mainType: string;
 	subType: string;
+	statType: StatTypes;
 	rarity: Rarities;
 	imageId: string;
 	deleted: boolean;

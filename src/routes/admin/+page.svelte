@@ -33,6 +33,7 @@
 				legend: '',
 				mainType: 'Accessory',
 				subType: 'None',
+				statType:'None',
 				rarity: 'None',
 				imageId: "",
 				gemNo: 0,

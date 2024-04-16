@@ -122,6 +122,7 @@
 			[key: string]: {
 				levelVisibility: boolean;
 				subTypes: string[] | null;
+				statTypes: string[] | null;
 				gemVisibility: boolean;
 				modifiable: boolean;
 				isShip: boolean;
@@ -145,24 +146,25 @@
 					'Arm',
 					'Back',
 					'Front',
-					'Waist',
-					'Magic',
-					'Strength'
+					'Waist'
 				],
+				statTypes: ['None', 'Magic', 'Strength', 'Vitality'],
 				gemVisibility: true,
 				modifiable: true,
 				isShip: false
 			},
 			Chestplate: {
 				levelVisibility: true,
-				subTypes: ['None', 'Magic', 'Strength'],
+				subTypes: null,
+				statTypes: ['None', 'Magic', 'Strength', 'Vitality'],
 				gemVisibility: true,
 				modifiable: true,
 				isShip: false
 			},
 			Pants: {
 				levelVisibility: true,
-				subTypes: ['None', 'Magic', 'Strength'],
+				subTypes: null,
+				statTypes: ['None', 'Magic', 'Strength', 'Vitality'],
 				gemVisibility: true,
 				modifiable: true,
 				isShip: false
@@ -170,6 +172,7 @@
 			Gem: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: false
@@ -177,6 +180,7 @@
 			Enchant: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -184,6 +188,7 @@
 			Modifier: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: false
@@ -191,6 +196,7 @@
 			Cannon: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -198,6 +204,7 @@
 			Deckhand: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -205,6 +212,7 @@
 			'Hull Armor': {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -212,6 +220,7 @@
 			Quartermaster: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -219,6 +228,7 @@
 			Ram: {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -226,6 +236,7 @@
 			'Sail Material': {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -233,6 +244,7 @@
 			'Ship Crew': {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -240,6 +252,7 @@
 			Ship: {
 				levelVisibility: false,
 				subTypes: ['Rowboat', 'Sailboat', 'Caravel', 'Ketch', 'Brig'],
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -247,6 +260,7 @@
 			'Siege Weapons': {
 				levelVisibility: false,
 				subTypes: null,
+				statTypes: null,
 				gemVisibility: false,
 				modifiable: false,
 				isShip: true
@@ -299,6 +313,7 @@
 
 		if (['Accessory', 'Chestplate', 'Pants'].includes(item.mainType)) {
 			tempItem.subType = item.subType;
+			tempItem.statType = item.statType;
 			tempItem.gemNo = item.gemNo;
 			tempItem.minLevel = statsTable.minLevel;
 			tempItem.maxLevel = statsTable.maxLevel;
@@ -399,6 +414,9 @@
 					{#if tableSettings.mainType[item.mainType].levelVisibility == true}
 						<RangeInput id={"minLevel"} name={"Min Level"} value={statsTable.minLevel} min={10} max={statsTable.maxLevel} step={10} onChange={setMin} isRequired={true} />
 						<RangeInput id={"maxLevel"} name={"Max Level"} value={statsTable.maxLevel} min={statsTable.minLevel} max={130} step={10} onChange={setMax} isRequired={true} />
+					{/if}
+					{#if tableSettings.mainType[item.mainType].statTypes != null}
+                    	<SelectInput id={"statType"} name={"Stat Type"} bind:value={item.statType} bind:dropdowns={tableSettings.mainType[item.mainType].statTypes} isRequired={true} tooltip={"Please select a stat type"} />
 					{/if}
                 </div>
                 <div class="grid gap-6 mb-6 md:grid-cols-6">
