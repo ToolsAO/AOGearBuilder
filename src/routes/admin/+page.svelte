@@ -1,6 +1,5 @@
 <script lang="ts">
-	import ItemCreateButton from "$lib/components/ItemCreateButton.svelte";
-	import ItemEditButton from "$lib/components/ItemEditButton.svelte";
+	import ItemMenuButton from "$lib/components/ItemMenuButton.svelte";
 	import type { anyItem } from "$lib/itemTypes";
 
 	export let data:any;
@@ -26,8 +25,8 @@
 	</div>
 
 	<div class="pt-5 flex flex-wrap justify-center">
-		<ItemCreateButton 
-			itemDefault={{
+		<ItemMenuButton 
+			item={{
 				id: "",
 				name: '',
 				legend: '',
@@ -42,6 +41,7 @@
 				deleted: false
 			}}
 			bind:password={password}
+			mode={"create"}
 		/>
 	</div>
 	<div class="pt-5 flex flex-wrap justify-center">
@@ -57,7 +57,7 @@
 		{#each listItems as item}
 			<div class="flex flex-col p-1">
 				{#key item.id}
-					<ItemEditButton {item} bind:password={password} />
+					<ItemMenuButton {item} bind:password={password} mode={"edit"} />
 				{/key}
 			</div>
 		{/each}

@@ -2,21 +2,24 @@
     import { enhance } from '$app/forms';
     import { onMount } from 'svelte';
 	import SubmitButton from './inputs/SubmitButton.svelte';
-	import { text } from '@sveltejs/kit';
 	import TextInput from './inputs/TextInput.svelte';
 	import SelectInput from './inputs/SelectInput.svelte';
-	import NumberInput from './inputs/NumberInput.svelte';
 	import type { anyItem } from '$lib/itemTypes';
 	import { Column, Table } from '$lib/table';
 	import RangeInput from './inputs/RangeInput.svelte';
 	import toast from 'svelte-french-toast';
 	import { rarityColors } from '$lib/dataConstants';
 
-	export let item:anyItem, password:string;
+	export let item:anyItem, password:string, mode:"edit"|"create";
+
+    let itemDefault:anyItem = Object.assign({}, item);
+
+    function resetItem() {
+		item = Object.assign({}, itemDefault);
+	}
 
     let open = false;
 
-	let imageIdDefault:string = "https://raw.githubusercontent.com/BobbyNooby/AOGearBuilder/master/static/assets/images/unknown.jpg";
 	let finalSubmitData:string = "";
 
 	let validImage = true;
@@ -24,7 +27,7 @@
 	if (item.imageId == "NO_IMAGE") {
 		validImage = false;
 		item.imageId = "";
-	}	
+    }
 
 	function setMin(e: Event & {currentTarget: EventTarget & Element;}) {
 		if (e.target) {
@@ -268,53 +271,59 @@
 	};
 
     let statsTable: Table;
-    if ("minLevel" in item && "maxLevel" in item) {
-        statsTable = new Table(item.minLevel, item.maxLevel, true);
-		const newMinLevel = Math.min(item.minLevel, item.maxLevel);
-		const newMaxLevel = Math.max(item.minLevel, item.maxLevel);
-
-		let filteredStats:any = {};
-		for (let stat of item.statsPerLevel) {
-			filteredStats[stat.level] = stat;
-		}
-
-		const newColumns = [];
-		for (let level = newMinLevel; level <= newMaxLevel; level += 10) {
-			let column: any = new Column(level, statsTable);
-			if (level in filteredStats) {
-				for (const [key, value] of Object.entries(filteredStats[level])) {
-					column[key] = value;
-					if (key != "level") {
-						statsTable.visiBools[key].bool = true;
-					}
-				}
-				newColumns.push(column);
-			}
-			newColumns.push(column);
-		}
-
-		for (const modifier of item.validModifiers) {
-			if (modifier in statsTable.validModifiers) {
-				statsTable.validModifiers[modifier] = true;
-			}
-		}
-
-		statsTable.minLevel = newMinLevel;
-		statsTable.maxLevel = newMaxLevel;
-		statsTable.columns = newColumns;
-    } else {
-        statsTable = new Table(90, 130, false);
-		let column: any = new Column(0, statsTable);
-		for (const [key, value] of Object.entries(item)) {
-			if (key in column) {
-				column[key] = value;
-			}
-			if (key in statsTable.visiBools) {
-				statsTable.visiBools[key].bool = true;
-			}
-		}
-		statsTable.columns = [column];
+    if (mode == "create") {
+        statsTable = new Table(90, 130, true);
     }
+    if (mode == "edit") {
+        if ("minLevel" in item && "maxLevel" in item) {
+            statsTable = new Table(item.minLevel, item.maxLevel, true);
+            const newMinLevel = Math.min(item.minLevel, item.maxLevel);
+            const newMaxLevel = Math.max(item.minLevel, item.maxLevel);
+
+            let filteredStats:any = {};
+            for (let stat of item.statsPerLevel) {
+                filteredStats[stat.level] = stat;
+            }
+
+            const newColumns = [];
+            for (let level = newMinLevel; level <= newMaxLevel; level += 10) {
+                let column: any = new Column(level, statsTable);
+                if (level in filteredStats) {
+                    for (const [key, value] of Object.entries(filteredStats[level])) {
+                        column[key] = value;
+                        if (key != "level") {
+                            statsTable.visiBools[key].bool = true;
+                        }
+                    }
+                    newColumns.push(column);
+                }
+                newColumns.push(column);
+            }
+
+            for (const modifier of item.validModifiers) {
+                if (modifier in statsTable.validModifiers) {
+                    statsTable.validModifiers[modifier] = true;
+                }
+            }
+
+            statsTable.minLevel = newMinLevel;
+            statsTable.maxLevel = newMaxLevel;
+            statsTable.columns = newColumns;
+        } else {
+            statsTable = new Table(90, 130, false);
+            let column: any = new Column(0, statsTable);
+            for (const [key, value] of Object.entries(item)) {
+                if (key in column) {
+                    column[key] = value;
+                }
+                if (key in statsTable.visiBools) {
+                    statsTable.visiBools[key].bool = true;
+                }
+            }
+            statsTable.columns = [column];
+        }
+    }
+
 	let validCategories: string[] = mainTypeStats.gearStatic;
 
 
@@ -399,22 +408,32 @@
 
 </script>
 
-<button class="w-24 h-24 flex items-center justify-center" style="border-color: {rarityColors[item.rarity]}; border-width: 1px; background-color: #020202;"on:click={() => handleToggle()}>
-	<img class="w-full h-full object-contain" style="display: {validImage && item.imageId != ""?"block":"none"};" src={item.imageId} alt={item.name} on:error={()=>validImage=false} on:load={()=>validImage=true}/>
-	<h1 style="display:{!validImage || item.imageId == ""?"block":"none"}; color:white;">{item.name || "None"}</h1>
-</button>
+{#if mode == "create"}
+    <button class="font-bold text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center" on:click={() => handleToggle()}>Create Item</button>
+{/if}
+
+{#if mode == "edit"}
+    <button class="w-24 h-24 flex items-center justify-center" style="border-color: {rarityColors[item.rarity]}; border-width: 1px; background-color: #020202;"on:click={() => handleToggle()}>
+        <img class="w-full h-full object-contain" style="display: {validImage && item.imageId != ""?"block":"none"};" src={item.imageId} alt={item.name} on:error={()=>validImage=false} on:load={()=>validImage=true}/>
+        <h1 style="display:{!validImage || item.imageId == ""?"block":"none"}; color:white;">{item.name || "None"}</h1>
+    </button>
+{/if}
+
 
 {#if open}
 <div class="modal z-50 fixed w-full h-full top-0 left-0 flex items-center justify-center p-8 lg:p-0 overflow-x-hidden overflow-y-auto">
     <div class="modal-overlay fixed w-full h-full bg-gray-900 opacity-50" />
     <div class="bg-white flex flex-col w-full lg:h-max lg:w-5/6 mx-auto rounded-lg shadow-xl z-50 overflow-y-auto max-h-full">
-        <form method="POST" action="?/edit" on:submit={generateEntry} use:enhance={() => {
+        <form method="POST" action="?/{mode=="create"?"create":"edit"}" on:submit={generateEntry} use:enhance={() => {
             return async ({ result, update }) => {
                 update({ reset: false });
         
                 if (result.type === 'success') {
                     handleToggle();
                     toast.success('Successfully updated '+item.name+'!');
+                    if (mode == "create") {
+                        resetItem();
+                    }
                 }
         
                 if (result.type === 'failure') {
@@ -571,7 +590,7 @@
 
             </div>
 
-            <SubmitButton text="Update" />
+            <SubmitButton text="{mode=="create"?"Create":"Update"}" />
         </form>
     </div>
 </div>
