@@ -358,7 +358,7 @@
 
 		if (['Accessory', 'Chestplate', 'Pants'].includes(item.mainType)) {
 			tempItem.subType = item.subType;
-			tempItem.subType = item.subType;
+			tempItem.statType = item.statType;
 			tempItem.gemNo = item.gemNo;
 			tempItem.minLevel = statsTable.minLevel;
 			tempItem.maxLevel = statsTable.maxLevel;
