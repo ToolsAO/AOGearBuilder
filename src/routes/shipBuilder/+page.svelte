@@ -1,6 +1,6 @@
 <script lang="ts">
-	import GearButton from '$lib/components/Builders/GearButton.svelte';
-	import ItemTooltip from '$lib/components/Builders/ItemTooltip.svelte';
+	import GearButton from '$lib/components/builders/GearButton.svelte';
+	import ItemTooltip from '$lib/components/builders/ItemTooltip.svelte';
 	import { CurrentShipBuild } from '$lib/shipBuilder/ShipClass.js';
 	import { ships } from '$lib/shipBuilder/shipList';
 	import type { MainShip } from '$lib/utils/itemTypes';
