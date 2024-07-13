@@ -14,14 +14,14 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
 
         times.push(Date.now())
 
-        let code = decodeURI(url.searchParams.get('code') || "");
+        let code = decodeURI(url.searchParams.get('code') || "136|1|0|0|0|0|AAZ.Tf4.AAu.0ma.XUx.130|ceB.I13.AAE.CBH.AAF.130|AAS.AAD.AAE.AAF.AAF.AAF.130|AAd.AAD.AAE.AAF.AAF.130|AAC.AAD.AAE.0" || "");
         times.push(Date.now())
 
         const database = await db.collection("items").find({}, { projection: { _id: 0 } }).toArray() as [];
         times.push(Date.now())
 
         let SessionPlayer = new Player(database, 140);
-        SessionPlayer.loadBuildCode(database, "136|1|0|0|0|0|AAZ.Tf4.AAu.0ma.XUx.130|ceB.I13.AAE.CBH.AAF.130|AAS.AAD.AAE.AAF.AAF.AAF.130|AAd.AAD.AAE.AAF.AAF.130|AAC.AAD.AAE.0");
+        SessionPlayer.loadBuildCode(database, code);
         let stats = SessionPlayer.build.getBuildStats();
         let efficiencyPointsString = calculateEfficiencyPoints(stats, SessionPlayer.level).toString();
         times.push(Date.now())

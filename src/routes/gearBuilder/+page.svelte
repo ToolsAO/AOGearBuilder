@@ -18,6 +18,7 @@
 	import { isMobile } from '$lib/utils/mobileStore';
 	import BuildsOverrideButton from '$lib/components/builders/BuildsOverrideButton.svelte';
 	import RandomButton from '$lib/components/builders/RandomButton.svelte';
+	import { page } from '$app/stores';
 
 	export let data: PageData;
 	let ready = false;
@@ -46,6 +47,12 @@
 		updatePage();
 		ready = true;
 	});
+
+	let embed = "";
+	if ($page.url.hash) {
+		embed = "?code="+$page.url.hash.replace("#", "");
+	}
+
 </script>
 
 <svelte:head>
@@ -59,14 +66,14 @@
 	<meta property="og:url" content="https://tools.arcaneodyssey.net/gearBuilder" />
 	<meta property="og:title" content="Gear Builder" />
 	<meta property="og:description" content="Gear Builder for Arcane Odyssey by BobbyNooby" />
-	<meta property="og:image" content="https://i.imgur.com/c6n3LP1.png" />
+	<meta property="og:image" content="https://toolsao.vercel.app/embed.gif{embed}" />
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image" />
 	<meta property="twitter:url" content="https://tools.arcaneodyssey.net/gearBuilder" />
 	<meta property="twitter:title" content="Gear Builder" />
 	<meta property="twitter:description" content="Gear Builder for Arcane Odyssey by BobbyNooby" />
-	<meta property="twitter:image" content="https://i.imgur.com/c6n3LP1.png" />
+	<meta property="twitter:image" content="https://toolsao.vercel.app/embed.gif{embed}" />
 
 	<!-- Meta Tags Generated with https://metatags.io -->
 
