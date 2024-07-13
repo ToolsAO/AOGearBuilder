@@ -63,14 +63,14 @@
 	<meta property="og:url" content="https://tools.arcaneodyssey.net/gearBuilder" />
 	<meta property="og:title" content="Gear Builder" />
 	<meta property="og:description" content="Gear Builder for Arcane Odyssey by BobbyNooby" />
-	<meta property="og:image" content="https://toolsao.vercel.app/embed.gif{embed}" />
+	<meta property="og:image" content="https://toolsao.vercel.app/embed.gif{"?code="+$page.url.hash.replace("#", "")}" />
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image" />
 	<meta property="twitter:url" content="https://tools.arcaneodyssey.net/gearBuilder" />
 	<meta property="twitter:title" content="Gear Builder" />
 	<meta property="twitter:description" content="Gear Builder for Arcane Odyssey by BobbyNooby" />
-	<meta property="twitter:image" content="https://toolsao.vercel.app/embed.gif{embed}" />
+	<meta property="twitter:image" content="https://toolsao.vercel.app/embed.gif{"?code="+$page.url.hash.replace("#", "")}" />
 
 	<!-- Meta Tags Generated with https://metatags.io -->
 
