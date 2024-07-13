@@ -1,21 +1,30 @@
-import GIFEncoder from 'gif-encoder-2/src/GIFEncoder'
+import { GifEncoder } from '@skyra/gifenc'
 import { ImageData, createCanvas, loadImage, type SKRSContext2D } from '@napi-rs/canvas'
 import type { RequestHandler } from './$types'
 import { Player } from '$lib/gearBuilder/playerClasses';
 import db from '$lib/dbHandler';
 import { calculateEfficiencyPoints } from '$lib/utils/calculateEfficiencyPoints';
 import { error } from '@sveltejs/kit';
+import { buffer } from 'node:stream/consumers';
 
 export const GET: RequestHandler = (async ({url, setHeaders}) => {
     try {
+
+        let times = [];
+
+        times.push(Date.now())
+
         let code = decodeURI(url.searchParams.get('code') || "");
+        times.push(Date.now())
 
         const database = await db.collection("items").find({}, { projection: { _id: 0 } }).toArray() as [];
+        times.push(Date.now())
 
         let SessionPlayer = new Player(database, 140);
         SessionPlayer.loadBuildCode(database, "136|1|0|0|0|0|AAZ.Tf4.AAu.0ma.XUx.130|ceB.I13.AAE.CBH.AAF.130|AAS.AAD.AAE.AAF.AAF.AAF.130|AAd.AAD.AAE.AAF.AAF.130|AAC.AAD.AAE.0");
         let stats = SessionPlayer.build.getBuildStats();
         let efficiencyPointsString = calculateEfficiencyPoints(stats, SessionPlayer.level).toString();
+        times.push(Date.now())
 
         let width = 1200;
         let height = 630;
@@ -91,6 +100,7 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
                 drawTextFit(ctx, item.name, "Calibri", [x, y, x+w, y+h], true, true);
             }
         }
+        times.push(Date.now())
 
         let itemStats: Record<string, Record<string, string>> = {
             power: { name: 'POWER', fillColor: '#FF8400', strokeColor: '#000000', suffix: '' },
@@ -166,31 +176,34 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
             ramStrength: { name: 'RAM STRENGTH', fillColor: '#FF8400', strokeColor: '#000000', suffix: '' },
             ramDefense: { name: 'RAM DEFENSE', fillColor: '#FFFFFF', strokeColor: '#6B6BD7', suffix: '' }
         };
+        times.push(Date.now())
 
         for (const [slotKey, slot] of Object.entries(SessionPlayer.build.slots)) {
             if (!(slot.armor.id in images["items"])) {
-                images["items"][slot.armor.id] = await getImage(slot.armor.imageId).catch((e) => {console.error(e.message);});
+                images["items"][slot.armor.id] = getImage(slot.armor.imageId).catch((e) => {console.error(e.message);});
             };
             console.log(slot.enchant.imageId)
             if (!(slot.enchant.id in images["items"])) {
-                images["items"][slot.enchant.id] = await getImage(slot.enchant.imageId).catch((e) => {console.error(e.message);});
+                images["items"][slot.enchant.id] = getImage(slot.enchant.imageId).catch((e) => {console.error(e.message);});
             };
             console.log(images["items"][slot.enchant.id])
             if (!(slot.modifier.id in images["items"])) {
-                images["items"][slot.modifier.id] = await getImage(slot.modifier.imageId).catch((e) => {console.error(e.message);});
+                images["items"][slot.modifier.id] = getImage(slot.modifier.imageId).catch((e) => {console.error(e.message);});
             };
             for (let gem of slot.gems) {
                 if (!(gem.id in images["items"])) {
-                    images["items"][gem.id] = await getImage(gem.imageId).catch((e) => {console.error(e.message);});
+                    images["items"][gem.id] = getImage(gem.imageId).catch((e) => {console.error(e.message);});
                 };
             }
         }
         console.log(images["items"])
+        times.push(Date.now())
 
 
         for (const [statKey, stat] of Object.entries(stats)) {
-            images["stat"][statKey] = await getImage(url.origin+`/assets/images/stats/${statKey}.png`).catch((e) => {console.error(e.message);});
+            images["stat"][statKey] = getImage(url.origin+`/assets/images/stats/${statKey}.png`).catch((e) => {console.error(e.message);});
         }
+        times.push(Date.now())
 
 
 
@@ -209,6 +222,7 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
         bgctx.stroke();
 
         console.log(SessionPlayer.build.getBuildStats())
+        times.push(Date.now())
 
         /*
         {
@@ -239,6 +253,7 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
                 statFontSize = tempsize;
             }
         }
+        times.push(Date.now())
 
         let usedStats:number = 0;
         for (const [index, [statKey, stat]] of Object.entries(Object.entries(stats))) {
@@ -261,6 +276,7 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
                 usedStats += 1;
             }
         }
+        times.push(Date.now())
 
         bgctx.fillStyle = '#FFFFFF';
 
@@ -269,9 +285,13 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
         bgctx.strokeStyle = '#FFFFFF';
         drawTextFit(bgctx, "EP: "+efficiencyPointsString, "Calibri", [600, 20+((usedStats)*textHeight)+10+10, width-10, 20+((usedStats+1)*textHeight)+10+10], true, true);
 
-        const encoder = new GIFEncoder(width, height, 'neuquant', true)
+        const encoder = new GifEncoder(width, height)
+        const stream = encoder.createReadStream();
+        encoder.setQuality(30)
         encoder.setDelay(1000)
+        encoder.setRepeat(0)
         encoder.start()
+        times.push(Date.now())
 
 
 
@@ -311,11 +331,12 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
                 }
             }
 
-
+            times.push(Date.now())
             await drawItemImage(ctx, slot.armor, 75/4, 243, 175, 175);
 
             await drawItemImage(ctx, slot.enchant, ((75/4)*2)+175, 243, 175, 175);
             await drawItemImage(ctx, slot.modifier, ((75/4)*3)+(175*2), 243, 175, 175);
+            times.push(Date.now())
 
             if (slot.armor.name.toLowerCase() == "none") {
                 slot.armor.gemNo = 3;
@@ -325,19 +346,28 @@ export const GET: RequestHandler = (async ({url, setHeaders}) => {
                 //ctx.drawImage(await images["items"][gem.id], ((75/4)*(i+1))+(175*i), 630-(75/4)-175, 175, 175);
                 await drawItemImage(ctx, gem, ((75/4)*(i+1))+(175*i), 630-(75/4)-175, 175, 175);
             }
+            times.push(Date.now())
 
             encoder.addFrame(ctx);
+            times.push(Date.now())
         }
+        times.push(Date.now())
 
         
         encoder.finish()
+
         
-        const buffer = encoder.out.getData()
+        
+        const bufferr = await buffer(stream);
+
+        for (var i = 0; i < times.length; i++) {
+            console.log(`time ${i+1}: ${times[i]}`);
+        }
 
         setHeaders({
             'Content-Type': "image/gif"
         });
-        const response = new Response(buffer)
+        const response = new Response(bufferr)
         return response
     } catch (e) {
         console.error(e)
