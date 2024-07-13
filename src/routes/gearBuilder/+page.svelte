@@ -48,7 +48,7 @@
 		ready = true;
 	});
 
-	let embed = "";
+	let embed = "?code=140,0,0,0,0|0||3qt,AVS,LoL,50|dRj,iVI,b13,sKB,N9w,130|YEg,Mod,AAE,2ST,nca,140|fuY,Mod,AAu,nca,DuG,140|AAm,yAq,AAu,9pe,XpP,140";
 	if ($page.url.hash) {
 		embed = "?code="+$page.url.hash.replace("#", "");
 	}
